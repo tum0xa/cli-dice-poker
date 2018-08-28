@@ -110,28 +110,67 @@ class Player:
     def check_hand(self):
         hand = self.show_hand()
         pair = 0
+        set_s = False
         self.__state = NOTHING
+        
         if hand.count('1') == 2:
             self.__state += PAIR1
             pair += 1
-        elif hand.count('2') == 2:
+        if hand.count('2') == 2:
             self.__state += PAIR2
             pair += 1
-        elif hand.count('3') == 2:
+        if hand.count('3') == 2:
             self.__state += PAIR3
             pair += 1
-        elif hand.count('4') == 2:
+        if hand.count('4') == 2:
             self.__state += PAIR4
             pair += 1
-        elif hand.count('5') == 2:
+        if hand.count('5') == 2:
             self.__state += PAIR5
             pair += 1
-        elif hand.count('6') == 2:
+        if hand.count('6') == 2:
             self.__state += PAIR6
             pair += 1
+        if hand.count('1') == 3:
+            self.__state += SET1
+            set_s = True
+        elif hand.count('2') == 3:
+            self.__state += SET2
+            set_s = True
+        elif hand.count('3') == 3:
+            self.__state += SET3
+            set_s = True
+        elif hand.count('4') == 3:
+            self.__state += SET4
+        elif hand.count('5') == 3:
+            set_s = True
+            self.__state += SET5
+        elif hand.count('6') == 3:
+            self.__state += SET6
+            set_s = True
+            
+        if hand.count('1') == 4:
+            self.__state += CARE1
+        elif hand.count('2') == 4:
+            self.__state += CARE2
+        elif hand.count('3') == 4:
+            self.__state += CARE3
+        elif hand.count('4') == 4:
+            self.__state += CARE4
+        elif hand.count('5') == 4:
+            self.__state += CARE5
+        elif hand.count('6') == 4:
+            self.__state += CARE6  
+        
+        if set_s == True and pair == 1: 
+            self.__state += FULL_HOUSE
+        
+        if set(hand) == ['1','2','3','4','5'] or set(hand) == ['2','3','4','5','6']:
+            self.__state += STRAIGHT
             
         if pair == 2:
             self.__state += TWO_PAIR
+            
         return self.__state
 
         
