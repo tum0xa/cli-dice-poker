@@ -54,7 +54,7 @@ class Player:
         self.__hand = []
         # ~ self.__hand = {1:0,2:0,3:0,4:0,5:0,6:0}
         self.__state = NOTHING
-        
+        self.win = 0
     def __str__(self):
         return self.name + self.__hand
     
@@ -87,7 +87,10 @@ class Player:
         else:
             for dice in self.__hand:
                 if self.__hand.index(dice) in dices_to_roll:
+                    # ~ print(dice.act_face)
                     dice.roll()
+                    # ~ print(dice.act_face)
+                    # ~ print('Reroll')
         # ~ print(self.name,'rolled the dices')
         
     def show_hand(self):
@@ -104,7 +107,7 @@ class Player:
 def check_hand(hand):
     state = {}
     result = NOTHING
-    
+    # ~ print(hand)
     for i in range(1,7):
         state.update({i:hand.count(str(i))})
         
@@ -116,29 +119,33 @@ def check_hand(hand):
         for key in state:
             if state.get(key) != NOTHING:
                 tmp.append(key)
+
         if set(tmp) == {1,2,3,4,5} or set(tmp) == {2,3,4,5,6}:
             result += STRAIGHT
+            print('Страйт')
     elif POKER in state.values():
         result += POKER*1000
-    
+        print('Покер')
     elif CARE in state.values():
         result += CARE*100
-    
+        print('Каре')
     elif PAIR in state.values() and SET in state.values():
         result += FULL_HOUSE*100
-        
+        print('Фул хаус')
     else:
         if PAIR in state.values():
             for key in state:
                 if state.get(key)==PAIR:
                     result+=key+PAIR
-                    
+                    print('Пара')
         if SET in state.values():
             for key in state:
                 if state.get(key)==SET:
                     result+=key+SET*10
+                    print('Сет')
                 
-    
+    if result == NOTHING:
+        print('Ничего')
     return result
 
         
@@ -153,6 +160,8 @@ def get_random_dices(num_of_dices,num_of_faces):
 def main():
     num_of_players = int(input("Сколько игроков за столом? - " ))
     players = []
+    winner = False
+    max_state = 0
     first_player = 0
     for i in range(num_of_players):
         player_name = input("Как зовут игрока №" + str(i + 1) + "? - ")
@@ -181,22 +190,57 @@ def main():
             if i < first_player-1:
                 players.append(players[i])
                 players.pop(i)
-    
-    for player in players:
-        input(player.name +"! Чтобы кинуть кости нажми 'Enter'. ")
-        print(player.name, " кидает кости.")
-        player.roll_dices()
-        print("Результат броска: ", end='')
-        player.draw_hand()
+    while winner == False:
+        score = []
+        for player in players:
+            input(player.name +"! Чтобы кинуть кости нажми 'Enter'. ")
+            print(player.name, " кидает кости.")
+            player.roll_dices()
+            print("Результат броска: ", end='')
+            player.draw_hand()
+            check_hand(player.show_hand())
+        # round 1
+        dices_to_reroll = []
+        for player in players:
+            dices_to_reroll = input(player.name + " какие кости будешь перебрасывaть. Напиши порядковые номера через запятую: - ").split(',')
+            
+            if dices_to_reroll == ['']:
+                dices_to_reroll = None
+                # ~ print(dices_to_reroll)
+            elif dices_to_reroll:
+                for dice_num in dices_to_reroll.copy():
+                    dices_to_reroll.append(int(dice_num)-1)
+                    dices_to_reroll.remove(dice_num)
+                # ~ print(dices_to_reroll)
+                
+                if len(dices_to_reroll)<2:
+                    dices_to_reroll = list(dices_to_reroll)
+                
+            player.roll_dices(dices_to_reroll)
+            print(player.name," - Результат броска: ", end='')
+            
+            player.draw_hand()
+            # ~ check_hand(player.show_hand())
+            
+        for player in players:
+            player.set_state(check_hand(player.show_hand()))
+            print('Игрок ', player.name, ':', player.get_state())
+
+            if player.get_state() > max_state:
+                max_state = player.get_state()
         
-    # round 1
-    dices_to_reroll = []
-    for player in players:
-        dices_to_reroll = input(player.name + " какие кости будешь перебрасывaть. Напиши порядкове номера через запятую: - ")
-        player.roll_dices(dices_to_roll=dices_to_reroll.split(','))
-        print("Результат броска: ", end='')
-        player.draw_hand()
-    
+        for player in players:
+            if player.get_state() == max_state:
+                player.win += 1
+                print(player.name,'выиграл в этом раунде!')
+                max_state = 0
+            if player.win == 2:
+                winner = True
+                print(player.name,'выиграл!')
+        
+        
+        
+        
     # ~ print(player1.name,'has:', player1.show_hand())
     # ~ print(player2.name,'has:', player2.show_hand())
 
